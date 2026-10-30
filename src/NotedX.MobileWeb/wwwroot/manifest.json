@@ -1,0 +1,36 @@
+{
+    "id": "/",
+    "name": "noted-x",
+    "short_name": "noted-x",
+    "description": "Local-first notes that stay on your own network.",
+    "start_url": "/#/home",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "any",
+    "background_color": "#F6F6F8",
+    "theme_color": "#F6F6F8",
+    "lang": "en",
+    "dir": "ltr",
+    "categories": ["productivity", "utilities"],
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

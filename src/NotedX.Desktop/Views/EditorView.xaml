@@ -1,0 +1,404 @@
+<UserControl x:Class="NotedX.Desktop.Views.EditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:views="clr-namespace:NotedX.Desktop.Views"
+             xmlns:vm="clr-namespace:NotedX.Desktop.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="920"
+             d:DesignHeight="760">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Editor header -->
+        <Border Grid.Row="0"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                  MaxWidth="820"
+                  Margin="36,22,36,14"
+                  HorizontalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
+                    <ui:Button x:Name="IconButton"
+                               Width="44" Height="44"
+                               Appearance="Transparent"
+                               CornerRadius="10"
+                               Padding="0"
+                               ToolTip="Change icon"
+                               Command="{Binding ToggleIconPickerCommand}">
+                        <Grid>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="24" Text="{Binding Icon}" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="20"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                       Text="📄">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Icon}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </ui:Button>
+
+                    <Popup IsOpen="{Binding IsIconPickerOpen, Mode=TwoWay}"
+                           PlacementTarget="{Binding ElementName=IconButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+                        <Border Margin="0,6,0,0"
+                                Width="300"
+                                Style="{StaticResource DialogCardStyle}"
+                                Padding="12">
+                            <ItemsControl ItemsSource="{Binding IconChoices}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Width="32" Height="32" Margin="2"
+                                                Style="{StaticResource SlashItemButtonStyle}"
+                                                Padding="0"
+                                                HorizontalContentAlignment="Center"
+                                                Command="{Binding DataContext.ChooseIconCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                CommandParameter="{Binding}">
+                                            <TextBlock FontSize="16" Text="{Binding}" />
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </Popup>
+                </Grid>
+
+                <Grid Grid.Row="0" Grid.Column="1" Margin="10,0,18,0">
+                    <TextBox x:Name="TitleBox"
+                             Style="{StaticResource TitleTextBoxStyle}"
+                             Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalAlignment="Center" />
+                    <TextBlock Margin="0,1,0,0"
+                               IsHitTestVisible="False"
+                               FontFamily="{StaticResource DisplayFontFamily}"
+                               FontSize="30"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               Text="Untitled">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Title}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <StackPanel Grid.Row="0" Grid.Column="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <ui:Button ToolTip="Favorite"
+                               Command="{Binding ToggleFavoriteCommand}">
+                        <ui:Button.Style>
+                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource IconButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource BrandBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                        <ui:SymbolIcon Symbol="Star24" Filled="{Binding IsFavorite}" FontSize="15" />
+                    </ui:Button>
+
+                    <ui:Button Margin="2,0,0,0" ToolTip="Version history"
+                               Command="{Binding ToggleHistoryCommand}">
+                        <ui:Button.Style>
+                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource IconButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsHistoryOpen}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource BrandBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                        <ui:SymbolIcon Symbol="History24" FontSize="15" />
+                    </ui:Button>
+
+                    <ui:Button Margin="2,0,0,0"
+                               Style="{StaticResource IconButtonStyle}"
+                               ToolTip="Export as Markdown"
+                               Command="{Binding ExportMarkdownCommand}">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="15" />
+                    </ui:Button>
+
+                    <Border Width="1" Height="20" Margin="8,0"
+                            Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+                    <ui:Button Style="{StaticResource IconButtonStyle}"
+                               ToolTip="Move to trash"
+                               Command="{Binding RequestDeleteCommand}">
+                        <ui:SymbolIcon Symbol="Delete24" FontSize="15" />
+                    </ui:Button>
+                </StackPanel>
+
+                <WrapPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                           Margin="10,8,0,0"
+                           Orientation="Horizontal">
+                    <ItemsControl ItemsSource="{Binding Tags}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource TagChipStyle}" Margin="0,0,6,4">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock FontSize="11.5" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource BrandBrush}"
+                                                   Text="{Binding}" />
+                                        <Button Margin="5,0,0,0"
+                                                Width="16" Height="16"
+                                                Padding="0"
+                                                Style="{StaticResource SlashItemButtonStyle}"
+                                                HorizontalContentAlignment="Center"
+                                                ToolTip="Remove tag"
+                                                Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                CommandParameter="{Binding}">
+                                            <TextBlock FontSize="8" Text="✕"
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border Style="{StaticResource PillStyle}" Padding="8,2" Margin="0,0,0,4"
+                            Background="Transparent">
+                        <StackPanel Orientation="Horizontal">
+                            <Grid>
+                                <TextBox Width="64"
+                                         VerticalAlignment="Center"
+                                         FontSize="11.5"
+                                         Style="{StaticResource BareTextBoxStyle}"
+                                         Text="{Binding TagInput, UpdateSourceTrigger=PropertyChanged}">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Return" Command="{Binding AddTagCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <TextBlock Margin="1,0,0,0"
+                                           VerticalAlignment="Center"
+                                           FontSize="11.5"
+                                           IsHitTestVisible="False"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           Text="Add tag">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding TagInput}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <Button Width="18" Height="18" Margin="4,0,0,0"
+                                    Style="{StaticResource SlashItemButtonStyle}"
+                                    HorizontalContentAlignment="Center"
+                                    Padding="0"
+                                    ToolTip="Add tag"
+                                    Command="{Binding AddTagCommand}">
+                                <ui:SymbolIcon Symbol="Add24" FontSize="10" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- Blocks -->
+        <Grid Grid.Row="1">
+            <ScrollViewer x:Name="BlocksScroller"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="0,0,4,0">
+                <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                      MaxWidth="820"
+                      Margin="40,26,40,90"
+                      HorizontalAlignment="Center">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Blocks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:BlockEditorViewModel}">
+                                    <views:BlockView />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Button Margin="0,8,0,0"
+                                Style="{StaticResource SlashItemButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Command="{Binding AddBlockCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Add24" FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Margin="7,0,0,0" FontSize="12.5"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           Text="Add a block" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Version history -->
+            <Border HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Width="308"
+                    Margin="0,10,14,14"
+                    Style="{StaticResource DialogCardStyle}"
+                    Padding="16"
+                    Visibility="{Binding IsHistoryOpen, Converter={StaticResource BoolToVisibility}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitleStyle}" FontSize="15" Text="Version history" />
+                            <TextBlock Style="{StaticResource SmallMutedTextStyle}"
+                                       Text="The last 30 saved versions" />
+                        </StackPanel>
+                        <ui:Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                                   Style="{StaticResource SmallIconButtonStyle}"
+                                   ToolTip="Close history"
+                                   Command="{Binding ToggleHistoryCommand}">
+                            <ui:SymbolIcon Symbol="Dismiss24" FontSize="11" />
+                        </ui:Button>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Revisions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,6"
+                                            Padding="10,8"
+                                            CornerRadius="8"
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock FontSize="12"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           Text="{Binding TimeText}" />
+                                                <TextBlock Style="{StaticResource SmallMutedTextStyle}" Text="Saved version" />
+                                            </StackPanel>
+                                            <ui:Button Grid.Column="1"
+                                                       Appearance="Secondary"
+                                                       Padding="9,3"
+                                                       CornerRadius="6"
+                                                       FontSize="11.5"
+                                                       Content="Restore"
+                                                       Command="{Binding DataContext.RestoreRevisionCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                                       CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Nothing open -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding IsLoaded, Converter={StaticResource InverseBoolToVisibility}}">
+                <TextBlock HorizontalAlignment="Center"
+                           FontFamily="{StaticResource DisplayFontFamily}"
+                           FontSize="20"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="No note open" />
+                <TextBlock Margin="0,6,0,0" HorizontalAlignment="Center"
+                           Style="{StaticResource MutedTextStyle}"
+                           Text="Choose a note from the sidebar or create a new one." />
+            </StackPanel>
+        </Grid>
+
+        <!-- Status bar -->
+        <Border Grid.Row="2"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="36,7">
+            <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                  MaxWidth="820"
+                  HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="6" Height="6" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDirty}" Value="True">
+                                        <Setter Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Style="{StaticResource SmallMutedTextStyle}"
+                               VerticalAlignment="Center"
+                               Text="{Binding SaveStatus}" />
+                </StackPanel>
+
+                <TextBlock Grid.Column="1"
+                           Margin="16,0,0,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource SmallMutedTextStyle}"
+                           Text="Autosaves to this PC · Ctrl+S to save now" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

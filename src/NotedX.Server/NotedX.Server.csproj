@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>NotedX.Server</AssemblyName>
+    <RootNamespace>NotedX.Server</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NotedX.Core\NotedX.Core.csproj" />
+    <ProjectReference Include="..\NotedX.MobileWeb\NotedX.MobileWeb.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Makaretu.Dns.Multicast" Version="0.27.0" />
+  </ItemGroup>
+
+</Project>

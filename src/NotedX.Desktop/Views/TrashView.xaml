@@ -1,0 +1,100 @@
+<UserControl x:Class="NotedX.Desktop.Views.TrashView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="880"
+             d:DesignHeight="700">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0"
+              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+              MaxWidth="820" Margin="44,30,44,18" HorizontalAlignment="Center">
+            <StackPanel>
+                <TextBlock Style="{StaticResource SectionLabelStyle}" Text="RECOVERY" />
+                <TextBlock Margin="0,6,0,0" Style="{StaticResource PageTitleStyle}" Text="Trash" />
+                <TextBlock Margin="0,6,0,0" Style="{StaticResource MutedTextStyle}"
+                           Text="Deleted notes wait here. Restore them, or remove them permanently." />
+            </StackPanel>
+
+            <ui:Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                       Appearance="Danger"
+                       Padding="14,7"
+                       CornerRadius="8"
+                       Content="Empty trash"
+                       Command="{Binding EmptyTrashCommand}"
+                       Visibility="{Binding HasTrash, Converter={StaticResource BoolToVisibility}}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+            <ItemsControl Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                          MaxWidth="820" Margin="44,0,44,40" HorizontalAlignment="Center"
+                          ItemsSource="{Binding TrashItems}"
+                          Visibility="{Binding HasTrash, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,8" Style="{StaticResource CardBorderStyle}" Padding="14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Width="38" Height="38" CornerRadius="9"
+                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                        VerticalAlignment="Center">
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               FontSize="17" Text="{Binding Icon}" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
+                                    <TextBlock FontSize="13.5" FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                               Text="{Binding Title}" />
+                                    <TextBlock Margin="0,3,0,0" Style="{StaticResource SmallMutedTextStyle}"
+                                               Text="{Binding DeletedText}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:Button Appearance="Secondary" Padding="12,5" CornerRadius="7" FontSize="12"
+                                               Content="Restore"
+                                               Command="{Binding DataContext.RestorePageCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                               CommandParameter="{Binding}" />
+                                    <ui:Button Margin="6,0,0,0" Appearance="Transparent" Padding="12,5" CornerRadius="7" FontSize="12"
+                                               Content="Delete forever"
+                                               Command="{Binding DataContext.DeleteForeverCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                               CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding HasTrash, Converter={StaticResource InverseBoolToVisibility}}">
+            <Border Width="54" Height="54" CornerRadius="14"
+                    Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                    HorizontalAlignment="Center">
+                <ui:SymbolIcon Symbol="Delete24" FontSize="22"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Margin="0,14,0,0" HorizontalAlignment="Center"
+                       Style="{StaticResource SectionTitleStyle}" Text="The trash is empty" />
+            <TextBlock Margin="0,6,0,0" HorizontalAlignment="Center"
+                       Style="{StaticResource MutedTextStyle}"
+                       Text="Notes you delete will appear here." />
+        </StackPanel>
+    </Grid>
+</UserControl>

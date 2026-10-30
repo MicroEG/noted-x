@@ -4,9 +4,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Product>noted-x</Product>
-    <Company>Mega Softwares</Company>
-    <Authors>Mega Softwares</Authors>
-    <Copyright>Copyright © 2026 Mega Softwares</Copyright>
     <VersionPrefix>0.1.0</VersionPrefix>
     <NeutralLanguage>en</NeutralLanguage>
     <Deterministic>true</Deterministic>
